@@ -1,0 +1,179 @@
+Router>en
+Router>enable 
+Router#in
+Router#conf 
+Configuring from terminal, memory, or network [terminal]? t
+Enter configuration commands, one per line.  End with CNTL/Z.
+Router(config)#in
+Router(config)#interface se
+Router(config)#interface serial 2/0
+Router(config-if)#no shu
+Router(config-if)#no shutdown 
+
+Router(config-if)#
+%LINK-5-CHANGED: Interface Serial2/0, changed state to up
+
+Router(config-if)#ip ad
+Router(config-if)#ip address 10.1.1.2 
+%LINEPROTO-5-UPDOWN: Line protocol on Interface Serial2/0, changed state to 
+                             ^
+% Invalid input detected at '^' marker.
+	
+Router(config-if)#ip address 10.1.1.2 255.255.255.0
+Router(config-if)#exit
+Router(config)#in
+Router(config)#interface se
+Router(config)#interface serial 3/0
+Router(config-if)#no shu
+Router(config-if)#no shutdown 
+
+%LINK-5-CHANGED: Interface Serial3/0, changed state to down
+Router(config-if)#ip AD
+Router(config-if)#ip AD
+Router(config-if)#ip a
+Router(config-if)#ip ad
+Router(config-if)#ip address 192.168.1.1 255.255.255.0
+Router(config-if)#exit
+Router(config)#rou
+Router(config)#router os
+Router(config)#router ospf 1
+Router(config-router)#rou
+Router(config-router)#router-id 1.1.2.2
+Router(config-router)#net
+Router(config-router)#network 10.0.0.0 0.255.255.255 area 0
+Router(config-router)#
+00:03:21: %OSPF-5-ADJCHG: Process 1, Nbr 1.1.1.1 on Serial2/0 from LOADING to FULL, Loading Done
+
+
+
+
+
+
+
+
+
+Router con0 is now available
+
+
+
+
+
+
+Press RETURN to get started.
+
+
+
+
+
+
+
+
+
+
+
+
+%LINK-5-CHANGED: Interface Serial3/0, changed state to up
+
+%LINEPROTO-5-UPDOWN: Line protocol on Interface Serial3/0, changed state to up
+
+
+Router>en
+Router>enable 
+Router#conf t
+Enter configuration commands, one per line.  End with CNTL/Z.
+Router(config)#rou
+Router(config)#router os
+Router(config)#router ospf 1
+Router(config-router)#net
+Router(config-router)#network 192.168.1.0 0.0.0.255 area 1
+Router(config-router)#exit
+Router(config)#
+00:48:26: %OSPF-5-ADJCHG: Process 1, Nbr 3.3.3.3 on Serial3/0 from LOADING to FULL, Loading Done
+
+
+
+
+
+
+
+
+
+Router con0 is now available
+
+
+
+
+
+
+Press RETURN to get started.
+
+
+
+
+
+
+
+
+
+
+
+
+%LINEPROTO-5-UPDOWN: Line protocol on Interface Serial3/0, changed state to down
+
+01:31:31: %OSPF-5-ADJCHG: Process 1, Nbr 3.3.3.3 on Serial3/0 from FULL to DOWN, Neighbor Down: Interface down or detached
+
+%LINEPROTO-5-UPDOWN: Line protocol on Interface Serial2/0, changed state to down
+
+01:31:31: %OSPF-5-ADJCHG: Process 1, Nbr 1.1.1.1 on Serial2/0 from FULL to DOWN, Neighbor Down: Interface down or detached
+
+%LINEPROTO-5-UPDOWN: Line protocol on Interface Serial3/0, changed state to up
+
+%LINEPROTO-5-UPDOWN: Line protocol on Interface Serial2/0, changed state to up
+
+01:31:41: %OSPF-5-ADJCHG: Process 1, Nbr 3.3.3.3 on Serial3/0 from LOADING to FULL, Loading Done
+
+01:31:42: %OSPF-5-ADJCHG: Process 1, Nbr 1.1.1.1 on Serial2/0 from LOADING to FULL, Loading Done
+
+
+Router>en
+Router>enable 
+Router#conf t
+Enter configuration commands, one per line.  End with CNTL/Z.
+Router(config)#sho
+Router(config)#rou
+Router(config)#router os
+Router(config)#router ospf 1
+Router(config-router)#ar
+Router(config-router)#area 1 stub
+Router(config-router)#
+01:49:31: %OSPF-5-ADJCHG: Process 1, Nbr 3.3.3.3 on Serial3/0 from FULL to DOWN, Neighbor Down: Adjacency forced to reset
+
+01:49:31: %OSPF-5-ADJCHG: Process 1, Nbr 3.3.3.3 on Serial3/0 from FULL to DOWN, Neighbor Down: Interface down or detached
+
+Router(config-router)#exit
+Router(config)#exit
+Router#
+%SYS-5-CONFIG_I: Configured from console by console
+show ip rou
+Router#show ip route 
+Codes: C - connected, S - static, I - IGRP, R - RIP, M - mobile, B - BGP
+       D - EIGRP, EX - EIGRP external, O - OSPF, IA - OSPF inter area
+       N1 - OSPF NSSA external type 1, N2 - OSPF NSSA external type 2
+       E1 - OSPF external type 1, E2 - OSPF external type 2, E - EGP
+       i - IS-IS, L1 - IS-IS level-1, L2 - IS-IS level-2, ia - IS-IS inter area
+       * - candidate default, U - per-user static route, o - ODR
+       P - periodic downloaded static route
+
+Gateway of last resort is not set
+
+     10.0.0.0/24 is subnetted, 2 subnets
+C       10.1.1.0 is directly connected, Serial2/0
+O       10.2.2.0 [110/65] via 10.1.1.1, 00:19:55, Serial2/0
+C    192.168.1.0/24 is directly connected, Serial3/0
+
+Router#
+Router#
+Router#wr mem
+Building configuration...
+[OK]
+Router#

@@ -1,0 +1,430 @@
+1) Почему для R2AR0 сеть для loopback интерфейсов задана в таком виде?
+- так как мы сразу анонсируем 4 loopback интерфейса
+
+шаг 2:
+Router#show ip route 
+Codes: C - connected, S - static, I - IGRP, R - RIP, M - mobile, B - BGP
+       D - EIGRP, EX - EIGRP external, O - OSPF, IA - OSPF inter area
+       N1 - OSPF NSSA external type 1, N2 - OSPF NSSA external type 2
+       E1 - OSPF external type 1, E2 - OSPF external type 2, E - EGP
+       i - IS-IS, L1 - IS-IS level-1, L2 - IS-IS level-2, ia - IS-IS inter area
+       * - candidate default, U - per-user static route, o - ODR
+       P - periodic downloaded static route
+
+Gateway of last resort is not set
+
+     10.0.0.0/8 is variably subnetted, 6 subnets, 2 masks
+C       10.1.1.0/24 is directly connected, Serial2/0
+C       10.2.2.0/24 is directly connected, FastEthernet0/0
+O       10.13.0.1/32 [110/2] via 10.2.2.2, 00:00:13, FastEthernet0/0
+O       10.13.1.1/32 [110/2] via 10.2.2.2, 00:00:03, FastEthernet0/0
+O       10.13.2.1/32 [110/2] via 10.2.2.2, 00:00:03, FastEthernet0/0
+O       10.13.3.1/32 [110/2] via 10.2.2.2, 00:00:03, FastEthernet0/0
+
+Router#
+
+Как интерпретировать «10.0.0.0/8 is variably subnetted, 6 subnets, 2 masks»?
+- сеть 10.0.0.0 разделена на 6 подсетей, используются 2 маски
+
+Шаг 3:
+Используя команду show ip ospf database вывести информацию о Router LSA, хранящихся на R1AR0.
+
+Router#show ip ospf  database router
+
+            OSPF Router with ID (1.1.1.1) (Process ID 1)
+
+                Router Link States (Area 0)
+
+  LS age: 962
+  Options: (No TOS-capability, DC)
+  LS Type: Router Links
+  Link State ID: 1.1.2.2
+  Advertising Router: 1.1.2.2
+  LS Seq Number: 80000002
+  Checksum: 0x8318
+  Length: 48
+  Number of Links: 2
+
+    Link connected to: another Router (point-to-point)
+     (Link ID) Neighboring Router ID: 1.1.1.1
+     (Link Data) Router Interface address: 10.1.1.2
+      Number of TOS metrics: 0
+       TOS 0 Metrics: 64
+
+    Link connected to: a Stub Network
+     (Link ID) Network/subnet number: 10.1.1.0
+     (Link Data) Network Mask: 255.255.255.0
+      Number of TOS metrics: 0
+       TOS 0 Metrics: 64
+
+  LS age: 605
+  Options: (No TOS-capability, DC)
+  LS Type: Router Links
+  Link State ID: 1.1.1.1
+  Advertising Router: 1.1.1.1
+  LS Seq Number: 80000007
+  Checksum: 0xbbaf
+  Length: 60
+  Number of Links: 3
+
+    Link connected to: a Transit Network
+     (Link ID) Designated Router address: 10.2.2.1
+     (Link Data) Router Interface address: 10.2.2.1
+      Number of TOS metrics: 0
+       TOS 0 Metrics: 1
+
+    Link connected to: another Router (point-to-point)
+     (Link ID) Neighboring Router ID: 1.1.2.2
+     (Link Data) Router Interface address: 10.1.1.1
+      Number of TOS metrics: 0
+       TOS 0 Metrics: 64
+
+    Link connected to: a Stub Network
+     (Link ID) Network/subnet number: 10.1.1.0
+     (Link Data) Network Mask: 255.255.255.0
+      Number of TOS metrics: 0
+       TOS 0 Metrics: 64
+
+  LS age: 270
+  Options: (No TOS-capability, DC)
+  LS Type: Router Links
+  Link State ID: 2.2.2.2
+  Advertising Router: 2.2.2.2
+  LS Seq Number: 80000006
+  Checksum: 0x2551
+  Length: 84
+  Number of Links: 5
+
+    Link connected to: a Transit Network
+     (Link ID) Designated Router address: 10.2.2.1
+     (Link Data) Router Interface address: 10.2.2.2
+      Number of TOS metrics: 0
+       TOS 0 Metrics: 1
+
+    Link connected to: a Stub Network
+     (Link ID) Network/subnet number: 10.13.0.1
+     (Link Data) Network Mask: 255.255.255.255
+      Number of TOS metrics: 0
+       TOS 0 Metrics: 1
+
+    Link connected to: a Stub Network
+     (Link ID) Network/subnet number: 10.13.1.1
+     (Link Data) Network Mask: 255.255.255.255
+      Number of TOS metrics: 0
+       TOS 0 Metrics: 1
+
+    Link connected to: a Stub Network
+     (Link ID) Network/subnet number: 10.13.2.1
+     (Link Data) Network Mask: 255.255.255.255
+      Number of TOS metrics: 0
+       TOS 0 Metrics: 1
+
+    Link connected to: a Stub Network
+     (Link ID) Network/subnet number: 10.13.3.1
+     (Link Data) Network Mask: 255.255.255.255
+      Number of TOS metrics: 0
+       TOS 0 Metrics: 1
+Router#
+
+1. Какой тип этого LSA?
+- Router LSA (тип 1)
+
+2. Сколько Router LSA хранится на хранится на R1AR0? Почему именно столько? А сколько
+Router LSA хранится на других маршрутизаторах этой области?
+- 3. потому что мы запустили протокол ospf на 3 маршрутизаторах в area 0. на других роутерах столько же
+
+3. Кто генерирует Router LSA? Какую информацию содержат Router LSA? В каких пределах
+распространяются маршрутизаторами Router LSA (в пределах сети, области, автономной
+системы и т. п.)?
+- все роутеры области. Router LSA содержит информацию о состоянии интерфейсов маршрутизатора. в пределах 1 области (в нашей магистральной)
+
+Шаг 4. Используя команду show ip ospf database network вывести информацию о Network
+LSA, хранящихся на R1AR0.
+
+Router#show ip ospf database network 
+
+            OSPF Router with ID (1.1.1.1) (Process ID 1)
+
+                Net Link States (Area 0)
+
+  Routing Bit Set on this LSA
+  LS age: 1774
+  Options: (No TOS-capability, DC)
+  LS Type: Network Links
+  Link State ID: 10.2.2.1  (address of Designated Router)
+  Advertising Router: 1.1.1.1
+  LS Seq Number: 80000001
+  Checksum: 0x0d30
+  Length: 32
+  Network Mask: /24
+        Attached Router: 2.2.2.2
+        Attached Router: 1.1.1.1
+Router#
+
+1. Какой тип этого LSA?
+- Network LSA.
+
+2. Сколько Network LSA хранится на хранится на R1AR0? Почему именно столько? А
+сколько Network LSA хранится на других маршрутизаторах этой области?
+- 1 network LSA. так как в области 1 свитч. на других тоже 1
+
+3. Что такое Designated Router? Зачем он нужен?
+- Designated Router - выделенный маршрутизатор. 
+Каждый маршрутизатор в сети устанавливает отношение соседства с DR, чтобы DR присылал им сообщения об изменениях в сети.
+Для предотвращения множественной рассылки копий.
+
+4. Кто генерирует Network LSA? Какую информацию содержат Network LSA? В каких пре-
+делах распространяются маршрутизаторами Network LSA?
+- Designated Router. Тип, адресс DR, его ID, список подсоединенных к сети. В пределах области.
+
+Шаг 6. Используя команду show ip route вывести содержимое таблицы маршрутизации на
+R1AR0. Вывести содержимое топологической базы, а именно Summary LSA на R1AR0.
+
+Router#show ip route 
+Codes: C - connected, S - static, I - IGRP, R - RIP, M - mobile, B - BGP
+       D - EIGRP, EX - EIGRP external, O - OSPF, IA - OSPF inter area
+       N1 - OSPF NSSA external type 1, N2 - OSPF NSSA external type 2
+       E1 - OSPF external type 1, E2 - OSPF external type 2, E - EGP
+       i - IS-IS, L1 - IS-IS level-1, L2 - IS-IS level-2, ia - IS-IS inter area
+       * - candidate default, U - per-user static route, o - ODR
+       P - periodic downloaded static route
+
+Gateway of last resort is not set
+
+     10.0.0.0/8 is variably subnetted, 6 subnets, 2 masks
+C       10.1.1.0/24 is directly connected, Serial2/0
+C       10.2.2.0/24 is directly connected, FastEthernet0/0
+O       10.13.0.1/32 [110/2] via 10.2.2.2, 00:40:06, FastEthernet0/0
+O       10.13.1.1/32 [110/2] via 10.2.2.2, 00:39:56, FastEthernet0/0
+O       10.13.2.1/32 [110/2] via 10.2.2.2, 00:39:56, FastEthernet0/0
+O       10.13.3.1/32 [110/2] via 10.2.2.2, 00:39:56, FastEthernet0/0
+O IA 192.168.1.0/24 [110/128] via 10.1.1.2, 00:00:33, Serial2/0
+O IA 192.168.2.0/24 [110/192] via 10.1.1.2, 00:00:33, Serial2/0
+
+Router#
+
+Router#show ip ospf database summary 
+
+            OSPF Router with ID (1.1.1.1) (Process ID 1)
+
+                Summary Net Link States (Area 0)
+
+  LS age: 126
+  Options: (No TOS-capability, DC, Upward)
+  LS Type: Summary Links(Network)
+  Link State ID: 192.168.1.0 (summary Network Number)
+  Advertising Router: 1.1.2.2
+  LS Seq Number: 80000001
+  Checksum: 0x248a
+  Length: 28
+  Network Mask: /24
+        TOS: 0  Metric: 64
+
+  LS age: 126
+  Options: (No TOS-capability, DC, Upward)
+  LS Type: Summary Links(Network)
+  Link State ID: 192.168.2.0 (summary Network Number)
+  Advertising Router: 1.1.2.2
+  LS Seq Number: 80000002
+  Checksum: 0x99d2
+  Length: 28
+  Network Mask: /24
+        TOS: 0  Metric: 128
+Router#
+
+1. В таблице маршрутизации появились маршруты помеченные кодом «O IA». Что означает
+этот код?
+- маршруты протокола из других областей
+
+2. Сколько сетей передается из Area 1 в Area 0? Какие? Сколько Summary LSA хранится на
+R1AR0?
+- 192.168.1.0/24 и 192.168.2.0/24. хранится 2
+
+3. Кто и каким образом генерирует Summary LSA? Какую информацию содержат Summary
+LSA?
+- ABR, он конвертирует Router LSA и Network LSA чужой области в Summary LSA. 
+Summary LSA предназначены для сокращения количества передаваемой информации о зонах. 
+Описывают сети других зон для локальной.
+
+
+Шаг 7. К Area 0 подключить внешний домен маршрутизации, работающий под управление про-
+токола RIPv2, и настроить передачу маршрутов из RIP в OSPF. Воспользоваться командой redistribute
+rip subnets.
+
+Router#show ip route 
+Codes: C - connected, S - static, I - IGRP, R - RIP, M - mobile, B - BGP
+       D - EIGRP, EX - EIGRP external, O - OSPF, IA - OSPF inter area
+       N1 - OSPF NSSA external type 1, N2 - OSPF NSSA external type 2
+       E1 - OSPF external type 1, E2 - OSPF external type 2, E - EGP
+       i - IS-IS, L1 - IS-IS level-1, L2 - IS-IS level-2, ia - IS-IS inter area
+       * - candidate default, U - per-user static route, o - ODR
+       P - periodic downloaded static route
+
+Gateway of last resort is not set
+
+     10.0.0.0/8 is variably subnetted, 7 subnets, 2 masks
+C       10.1.1.0/24 is directly connected, Serial2/0
+C       10.2.2.0/24 is directly connected, FastEthernet0/0
+O E2    10.3.3.0/24 [110/20] via 10.2.2.2, 00:03:55, FastEthernet0/0
+O       10.13.0.1/32 [110/2] via 10.2.2.2, 00:03:55, FastEthernet0/0
+O       10.13.1.1/32 [110/2] via 10.2.2.2, 00:03:55, FastEthernet0/0
+O       10.13.2.1/32 [110/2] via 10.2.2.2, 00:03:55, FastEthernet0/0
+O       10.13.3.1/32 [110/2] via 10.2.2.2, 00:03:55, FastEthernet0/0
+     172.20.0.0/16 is variably subnetted, 3 subnets, 2 masks
+O E2    172.20.0.0/16 [110/20] via 10.2.2.2, 00:00:48, FastEthernet0/0
+O E2    172.20.1.0/24 [110/20] via 10.2.2.2, 00:00:20, FastEthernet0/0
+O E2    172.20.2.0/24 [110/20] via 10.2.2.2, 00:00:20, FastEthernet0/0
+O IA 192.168.1.0/24 [110/128] via 10.1.1.2, 00:03:55, Serial2/0
+O IA 192.168.2.0/24 [110/192] via 10.1.1.2, 00:03:55, Serial2/0
+
+
+Router#show ip ospf database external 
+
+            OSPF Router with ID (1.1.1.1) (Process ID 1)
+
+                Type-5 AS External Link States
+
+  Routing Bit Set on this LSA
+  LS age: 1061
+  Options: (No TOS-capability, DC)
+  LS Type: AS External Link
+  Link State ID: 10.3.3.0 (External Network Number )
+  Advertising Router: 2.2.2.2
+  LS Seq Number: 80000001
+  Checksum: 0xc5e2
+  Length: 36
+  Network Mask: /24
+        Metric Type: 2 (Larger than any link state path)
+        TOS: 0
+        Metric: 20
+        Forward Address: 0.0.0.0
+        External Route Tag: 0
+
+  Routing Bit Set on this LSA
+  LS age: 581
+  Options: (No TOS-capability, DC)
+  LS Type: AS External Link
+  Link State ID: 172.20.1.0 (External Network Number )
+  Advertising Router: 2.2.2.2
+  LS Seq Number: 80000001
+  Checksum: 0xcd29
+  Length: 36
+  Network Mask: /24
+        Metric Type: 2 (Larger than any link state path)
+        TOS: 0
+        Metric: 20
+        Forward Address: 0.0.0.0
+        External Route Tag: 0
+
+  Routing Bit Set on this LSA
+  LS age: 581
+  Options: (No TOS-capability, DC)
+  LS Type: AS External Link
+  Link State ID: 172.20.2.0 (External Network Number )
+  Advertising Router: 2.2.2.2
+  LS Seq Number: 80000001
+  Checksum: 0xc233
+  Length: 36
+  Network Mask: /24
+        Metric Type: 2 (Larger than any link state path)
+        TOS: 0
+        Metric: 20
+        Forward Address: 0.0.0.0
+        External Route Tag: 0
+
+  Routing Bit Set on this LSA
+  LS age: 199
+  Options: (No TOS-capability, DC)
+  LS Type: AS External Link
+  Link State ID: 172.20.0.255 (External Network Number )
+  Advertising Router: 2.2.2.2
+  LS Seq Number: 8000000f
+  Checksum: 0xbb2e
+  Length: 36
+  Network Mask: /24
+        Metric Type: 2 (Larger than any link state path)
+        TOS: 0
+        Metric: 20
+        Forward Address: 0.0.0.0
+        External Route Tag: 0
+
+  Routing Bit Set on this LSA
+  LS age: 171
+  Options: (No TOS-capability, DC)
+  LS Type: AS External Link
+  Link State ID: 172.20.0.0 (External Network Number )
+  Advertising Router: 2.2.2.2
+  LS Seq Number: 80000001
+  Checksum: 0xd81f
+  Length: 36
+  Network Mask: /24
+        Metric Type: 2 (Larger than any link state path)
+        TOS: 0
+        Metric: 20
+        Forward Address: 0.0.0.0
+        External Route Tag: 0
+Router#
+
+1. В таблице маршрутизации появились записи с кодом «O E2».Что они означают?
+-External Type 2
+
+2. Объяснить смысл данных выводимых командой show ip ospf database
+external.
+- Информация о внешних сетях (использующих другие протоколы маршрутизации).
+Адрес, маски, ID роутера отправителя.
+
+3. Кто и каким образом генерирует External LSA? Какую информацию содержат External
+LSA?
+- пограничные маршрутизаторы автономных систем. 
+В них содержится описание внешних для АС маршрутов и маршруты по умолчанию.
+
+Шаг 8. Сделать область Area 1 тупиковой (Stub).
+
+ABR
+Router#show ip route 
+Codes: C - connected, S - static, I - IGRP, R - RIP, M - mobile, B - BGP
+       D - EIGRP, EX - EIGRP external, O - OSPF, IA - OSPF inter area
+       N1 - OSPF NSSA external type 1, N2 - OSPF NSSA external type 2
+       E1 - OSPF external type 1, E2 - OSPF external type 2, E - EGP
+       i - IS-IS, L1 - IS-IS level-1, L2 - IS-IS level-2, ia - IS-IS inter area
+       * - candidate default, U - per-user static route, o - ODR
+       P - periodic downloaded static route
+
+Gateway of last resort is not set
+
+     10.0.0.0/24 is subnetted, 2 subnets
+C       10.1.1.0 is directly connected, Serial2/0
+O       10.2.2.0 [110/65] via 10.1.1.1, 00:19:55, Serial2/0
+C    192.168.1.0/24 is directly connected, Serial3/0
+
+Router#
+
+R1AR1
+Router#show ip route 
+Codes: C - connected, S - static, I - IGRP, R - RIP, M - mobile, B - BGP
+       D - EIGRP, EX - EIGRP external, O - OSPF, IA - OSPF inter area
+       N1 - OSPF NSSA external type 1, N2 - OSPF NSSA external type 2
+       E1 - OSPF external type 1, E2 - OSPF external type 2, E - EGP
+       i - IS-IS, L1 - IS-IS level-1, L2 - IS-IS level-2, ia - IS-IS inter area
+       * - candidate default, U - per-user static route, o - ODR
+       P - periodic downloaded static route
+
+Gateway of last resort is not set
+
+C    192.168.1.0/24 is directly connected, Serial2/0
+C    192.168.2.0/24 is directly connected, Serial3/0
+
+Router#
+
+1. Что такое тупиковая область? Для чего нужна?
+ - область, которая не знает о путях за своими пределами.
+нужна для снижения трафика обновлений на маршрутизаторах.
+
+2. Как отразилось на таблице маршрутизации и содержимом топологической базы маршру-
+тизаторов ABR и R1AR1 то, что область стала тупиковой?
+
+
+3. Предположим, что из области Area 1 понадобилось передать в OSPF какой-то внешний
+маршрут, например, пробросить статический маршрут до провайдера и т.д. В топологии в
+Area 1 есть роутер ASBR, на котором настроено несколько статических маршрутов. Уда-
+ется ли передать эти маршруты в OSPF? Почему?
